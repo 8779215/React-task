@@ -1,16 +1,34 @@
 import React, { useEffect, useState } from "react";
 import { connect } from "react-redux";
-import SearchIcon from '@material-ui/icons/Search';
+import SearchIcon from "@material-ui/icons/Search";
 import { onFetchImages } from "../../redux/actions/images";
 
 import "./Home.scss";
 
-const Home = ({ _onFetchImages, listLoading, imagesList }) => {
-  const [searchedInput, setSearchedInput] = useState("");
+const Home = ({ _onFetchImages, imagesList, totalCount }) => {
+  const [searchedInput, setSearchedInput] = useState();
+  const [pageNo, setPageNo] = useState(1);
+  const [totalPageCount, setTotalPageCount] = useState(null);
 
   useEffect(() => {
-    _onFetchImages({ type: searchedInput });
+    _onFetchImages({ type: searchedInput, pageNo: pageNo });
   }, [searchedInput]);
+
+  useEffect(() => {
+    const data = Math.round(totalCount / 8);
+    const temp = [];
+
+    for (let i = 0; i < data; i++) {
+      temp.push(i + 1);
+    }
+
+    setTotalPageCount(temp);
+  }, [totalCount, imagesList]);
+
+  const updatePageNo = (count) => {
+    setPageNo(count);
+    _onFetchImages({ type: searchedInput, pageNo: count });
+  };
 
   return (
     <div className="container">
@@ -24,7 +42,7 @@ const Home = ({ _onFetchImages, listLoading, imagesList }) => {
             onChange={(e) => setSearchedInput(e.target.value)}
           />
           <div className="search-icon">
-          <SearchIcon />
+            <SearchIcon />
           </div>
         </form>
         <div className="tab-selection">
@@ -58,22 +76,37 @@ const Home = ({ _onFetchImages, listLoading, imagesList }) => {
           </div>
         </div>
       </div>
-      <h1><span>{searchedInput} </span>Pictures</h1>
+      <h1>
+        <span>{searchedInput && searchedInput} </span>Pictures
+      </h1>
       <div className="row images-section">
-        { imagesList?.map((images, index) => (
-              <div key={index} className="images-list">
-                  <img src={images.url} alt="smple-images" />
-              </div>
-            ))
-          }
+        {imagesList?.map((images, index) => (
+          <div key={index} className="images-list">
+            <img src={images.url} alt="smple-images" />
+          </div>
+        ))}
       </div>
+      { !searchedInput && (
+        <div className="pagination">
+        {totalPageCount?.map((count) => (
+          <button
+            key={count}
+            onClick={() => updatePageNo(count)}
+            className="images-list"
+          >
+            {count}
+          </button>
+        ))}
+      </div>
+      )
+      }
     </div>
   );
 };
 
 const mapStateToProps = ({ images }) => {
-  const { listLoading, imagesList } = images;
-  return { listLoading, imagesList };
+  const { listLoading, imagesList, totalCount } = images;
+  return { listLoading, imagesList, totalCount };
 };
 
 const mapDispatchToProps = {

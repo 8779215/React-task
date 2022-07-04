@@ -2,14 +2,17 @@ import { takeLatest, put,  call } from "redux-saga/effects";
 import Axios from "axios";
 import { FETCH_IMAGES } from "../constants/ActionTypes";
 
-// fetch primary member details
+// fetch images
 function* fetchImages({ payload }) {
 
-    const { type } = payload; 
-    let url = `http://localhost:3001/images?&_limit=20&_page=1`;
+    const { type, pageNo } = payload; 
+    let url = `http://localhost:3001/images`;
 
     if (type && type !== "") {
-        url = `${url}&type=${type}`;
+        url = `${url}?&type=${type}`;
+    }
+    else {
+        url = `${url}?&_limit=8&_page=${pageNo}`;
     }
 
     yield put({
